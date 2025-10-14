@@ -8,11 +8,11 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class RemovePlexusTestCaseTest implements RewriteTest {
+class ReplacePlexusTestCaseTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new RemovePlexusTestCase());
+        spec.recipe(new ReplacePlexusTestCase());
         spec.parser(JavaParser.fromJavaVersion()
                 .classpathFromResources(new InMemoryExecutionContext(), "junit-4.13.2", "org.eclipse.sisu.plexus-0.9.0.M4", "plexus-build-api-1.2.0"));
     }
@@ -38,7 +38,9 @@ class RemovePlexusTestCaseTest implements RewriteTest {
                         }
         """,
                 """
-
+                        import org.codehaus.plexus.testing.PlexusTest;
+                        
+                        @PlexusTest
                         public class MojoTest {
                         }
         """
