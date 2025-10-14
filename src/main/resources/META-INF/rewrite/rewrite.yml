@@ -1,0 +1,8 @@
+type: specs.openrewrite.org/v1beta/recipe
+name: dev.parsick.maven.rewrite.plexustestcase.MigratePlexusTestCase
+description: Migrate test based on PlexusTestCase to PlexusTest or PlexusExtension.
+displayName: Migrate PlexusTestCase
+recipeList:
+  - org.openrewrite.java.testing.junit5.MigrateJUnitTestCase
+  - dev.parsick.maven.rewrite.plexustestcase.ReplaceLookup
+  - dev.parsick.maven.rewrite.plexustestcase.ReplacePlexusTestCase

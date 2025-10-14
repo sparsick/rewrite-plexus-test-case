@@ -55,6 +55,18 @@
             <version>0.9.0.M4</version>
         </dependency>
         <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-build-api</artifactId>
+            <version>1.2.0</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
