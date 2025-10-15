@@ -10,7 +10,6 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -36,17 +35,15 @@ public class ReplacePlexusTestCase extends Recipe {
 
     private class PlexusTestCaseVisitor extends JavaIsoVisitor<ExecutionContext> {
 
-        private static List<String> staticPlexusExtensionsMethod = new ArrayList<>() {
-            {
-                add("getTestFile");
-                add("getTestPath");
-                add("getBaseDir");
-                add("getTestConfiguration");
-            }
-        };
+        private static List<String> STATIC_PLEXUS_EXTENSIONS_METHOD = List.of(
+                "getTestFile",
+                "getTestPath",
+                "getBaseDir",
+                "getTestConfiguration"
+        );
 
-        private static String NEW_CLASS = "org.codehaus.plexus.testing.PlexusExtension";
-        private static String OLD_CLASS = "org.codehaus.plexus.PlexusTestCase";
+        private static String PLEXUS_EXTENSION_CLASS = "org.codehaus.plexus.testing.PlexusExtension";
+        private static String PLEXUS_TEST_CASE_CLASS = "org.codehaus.plexus.PlexusTestCase";
 
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
@@ -59,12 +56,11 @@ public class ReplacePlexusTestCase extends Recipe {
                     .javaParser(JavaParser.fromJavaVersion()
                             .classpath("plexus-testing"))
                     .imports("org.codehaus.plexus.testing.PlexusTest")
-//                    .staticImports(staticPlexusExtensionsMethod.stream().map(name -> NEW_CLASS + "." + name).toArray(String[]::new))
                     .build()
                     .apply(getCursor(), cd.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
             maybeAddImport("org.codehaus.plexus.testing.PlexusTest"); // both imports methods are needed to add a new import
-            staticPlexusExtensionsMethod.forEach( it -> {
-                        doAfterVisit(new ChangeMethodTargetToStatic(OLD_CLASS + " " + it + "(..)", NEW_CLASS, null, null, true).getVisitor());
+            STATIC_PLEXUS_EXTENSIONS_METHOD.forEach(it -> {
+                        doAfterVisit(new ChangeMethodTargetToStatic(PLEXUS_TEST_CASE_CLASS + " " + it + "(..)", PLEXUS_EXTENSION_CLASS, null, null, true).getVisitor());
                     }
             );
 
