@@ -15,7 +15,7 @@ public class ReplaceLookupTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec.recipe(new ReplaceLookup()).typeValidationOptions(TypeValidation.none());
         spec.parser(JavaParser.fromJavaVersion()
-                .classpathFromResources(new InMemoryExecutionContext(), "junit-4.13.2", "org.eclipse.sisu.plexus-0.9.0.M4", "plexus-build-api-1.2.0"));
+                .classpathFromResources(new InMemoryExecutionContext(), "junit-4.13.2", "org.eclipse.sisu.plexus-0.9.0.M4", "plexus-build-api-1.2.0", "javax.inject-1"));
     }
 
     @Test

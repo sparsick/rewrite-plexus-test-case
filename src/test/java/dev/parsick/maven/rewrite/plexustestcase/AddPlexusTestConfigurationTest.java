@@ -8,13 +8,15 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class AddPlexusTestConfiguratrionTest implements RewriteTest {
+class AddPlexusTestConfigurationTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new AddPlexusTestConfiguration());
         spec.parser(JavaParser.fromJavaVersion()
-                .classpathFromResources(new InMemoryExecutionContext(), "junit-4.13.2", "org.eclipse.sisu.plexus-0.9.0.M4", "plexus-build-api-1.2.0"));
+                .classpathFromResources(new InMemoryExecutionContext(), "junit-4.13.2",
+                        "org.eclipse.sisu.plexus-0.9.0.M4", "plexus-build-api-1.2.0", "javax.inject-1"));
+
     }
 
     @Test
@@ -154,5 +156,7 @@ class AddPlexusTestConfiguratrionTest implements RewriteTest {
                         }"""
         ));
     }
+
+
 
 }
