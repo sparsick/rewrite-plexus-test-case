@@ -5,4 +5,11 @@ displayName: Migrate PlexusTestCase
 recipeList:
   - org.openrewrite.java.testing.junit5.MigrateJUnitTestCase
   - dev.parsick.maven.rewrite.plexustestcase.ReplaceLookup
+  - dev.parsick.maven.rewrite.plexustestcase.AddPlexusTestConfiguratrion
+  - org.openrewrite.java.ChangeMethodName:
+        methodPattern: org.codehaus.plexus.PlexusTestCase customizeContainerConfiguration(..)
+        newMethodName: customizeConfiguration
+  - org.openrewrite.java.ChangeMethodAccessLevel:
+      methodPattern: org.codehaus..* customizeConfiguration(..)
+      newAccessLevel: public
   - dev.parsick.maven.rewrite.plexustestcase.ReplacePlexusTestCase
