@@ -13,7 +13,7 @@ public class ReplaceLookupTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new ReplaceLookup()).typeValidationOptions(TypeValidation.none());
+        spec.recipe(new ReplaceLookup());
         spec.parser(JavaParser.fromJavaVersion()
                 .classpathFromResources(new InMemoryExecutionContext(), "junit-4.13.2", "org.eclipse.sisu.plexus-0.9.0.M4", "plexus-build-api-1.2.0", "javax.inject-1"));
     }
@@ -30,6 +30,7 @@ public class ReplaceLookupTest implements RewriteTest {
                             public void testModelloConvertersMojo() throws Exception {
 
                                 BuildContext buildContext = (BuildContext) lookup(BuildContext.class);
+                                BuildContext buildContext1 = (BuildContext) lookup(BuildContext.class);
                             }    
                         }
         """,
@@ -41,6 +42,9 @@ public class ReplaceLookupTest implements RewriteTest {
                         
                         public class MojoTest extends PlexusTestCase {
                         
+                            @Inject
+                            private BuildContext buildContext1;
+                            
                             @Inject
                             private BuildContext buildContext;
                             

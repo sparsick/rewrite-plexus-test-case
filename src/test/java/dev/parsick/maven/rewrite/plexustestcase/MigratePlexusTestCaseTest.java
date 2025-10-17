@@ -13,8 +13,7 @@ class MigratePlexusTestCaseTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(MigratePlexusTestCaseTest.class.getResourceAsStream("/META-INF/rewrite/rewrite.yml"), "dev.parsick.maven.rewrite.plexustestcase.MigratePlexusTestCase")
-                .typeValidationOptions(TypeValidation.none());
+        spec.recipe(MigratePlexusTestCaseTest.class.getResourceAsStream("/META-INF/rewrite/rewrite.yml"), "dev.parsick.maven.rewrite.plexustestcase.MigratePlexusTestCase");
         spec.parser(JavaParser.fromJavaVersion()
                 .classpathFromResources(new InMemoryExecutionContext(),
                         "junit-4.13.2", "org.eclipse.sisu.plexus-0.9.0.M4", "plexus-build-api-1.2.0", "plexus-testing-1.7.0"));
