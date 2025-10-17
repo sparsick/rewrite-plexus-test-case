@@ -5,7 +5,6 @@ import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 
@@ -16,6 +15,57 @@ public class ReplaceLookupTest implements RewriteTest {
         spec.recipe(new ReplaceLookup());
         spec.parser(JavaParser.fromJavaVersion()
                 .classpathFromResources(new InMemoryExecutionContext(), "junit-4.13.2", "org.eclipse.sisu.plexus-0.9.0.M4", "plexus-build-api-1.2.0", "javax.inject-1"));
+    }
+
+
+    @Test
+    void doNothing1() {
+        rewriteRun(java(
+                """
+                                        public class MojoTest {
+                        
+                                        }
+                        """));
+    }
+
+    @Test
+    void doNothing2() {
+        rewriteRun(java(
+                """
+                                        public class MojoTest {
+                                            public void testModelloConvertersMojo() throws Exception {
+
+                                            }    
+                                        }
+                        """));
+    }
+
+
+    @Test
+    void doNothing3() {
+        rewriteRun(java(
+                """
+                                        public class MojoTest {
+                                            public void testModelloConvertersMojo() throws Exception {
+                                                    lookup();
+                                            }    
+                                            
+                                            private void lookup() throws Exception {}
+                                        }
+                        """));
+    }
+
+    @Test
+    void doNothing4() {
+        rewriteRun(java(
+                """             
+                                        import java.util.List;
+                                        import java.util.ArrayList;
+                                           
+                                        public class CustomList extends ArrayList<String>
+                                                implements List<String> {
+                                        }
+                        """));
     }
 
     @Test

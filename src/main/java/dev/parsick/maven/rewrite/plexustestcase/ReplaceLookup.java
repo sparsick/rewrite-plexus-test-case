@@ -36,8 +36,12 @@ public class ReplaceLookup extends Recipe {
 
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
+            if(classDecl.getExtends() == null || !classDecl.getExtends().getType().toString().equals("org.codehaus.plexus.PlexusTestCase")) {
+                return classDecl;
+            }
+
             J.ClassDeclaration classDeclaration = classDecl;
-//
+
             List<J.VariableDeclarations.NamedVariable> lookupMethod = findLookupMethod(classDeclaration);
 
             if  (!lookupMethod.isEmpty()) {
