@@ -26,5 +26,9 @@ This recipe collection helps with:
 
 This project can be used as part of an OpenRewrite migration to automatically refactor legacy Maven plugin tests. The recipes are configured through the standard OpenRewrite YAML configuration and can be applied to codebases that need to migrate away from  Plexus TestCase patterns.
 
+```shell
+mvn -U org.openrewrite.maven:rewrite-maven-plugin:run -Drewrite.recipeArtifactCoordinates=dev.parsick.maven.rewrite.plexustestcase:rewrite-plexus-test-case:0.1.0-SNAPSHOT -Drewrite.activeRecipes=dev.parsick.maven.rewrite.plexustestcase.MigratePlexusTestCase
+```
+
 ## License
 See [LICENSE](LICENSE) file for details.
