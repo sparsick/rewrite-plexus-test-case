@@ -44,6 +44,12 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-plugin-api</artifactId>
+            <version>3.9.11</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-testing</artifactId>
             <version>1.7.0</version>
