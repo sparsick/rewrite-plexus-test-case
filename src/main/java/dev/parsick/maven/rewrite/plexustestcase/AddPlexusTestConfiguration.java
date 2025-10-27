@@ -1,7 +1,5 @@
 package dev.parsick.maven.rewrite.plexustestcase;
 
-import org.jspecify.annotations.Nullable;
-import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.NlsRewrite;
 import org.openrewrite.Recipe;
@@ -10,11 +8,9 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeTree;
 
 import java.util.List;
-import java.util.Optional;
 
 public class AddPlexusTestConfiguration extends Recipe {
     @Override

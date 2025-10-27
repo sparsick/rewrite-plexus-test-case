@@ -1,23 +1,17 @@
 package dev.parsick.maven.rewrite.plexustestcase;
 
-import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.ListUtils;
-import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.ChangeMethodTargetToStatic;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.TreeVisitingPrinter;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.TypeTree;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 import static org.openrewrite.NlsRewrite.Description;
 import static org.openrewrite.NlsRewrite.DisplayName;
