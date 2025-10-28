@@ -35,38 +35,6 @@ public class ReplaceLookupMojo extends Recipe {
 
     private class ReplaceLookupMojoVisitor extends JavaIsoVisitor<ExecutionContext> {
 
-//        @Override
-//        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
-//            if(classDecl.getExtends() == null || !classDecl.getExtends().getType().toString().equals("org.apache.maven.plugin.testing.AbstractMojoTestCase")) {
-//                return classDecl;
-//            }
-//
-//            J.ClassDeclaration classDeclaration = classDecl;
-//
-//            List<J.VariableDeclarations.NamedVariable> lookupMethod = findLookupMethod(classDeclaration);
-//
-//            if  (!lookupMethod.isEmpty()) {
-//                for(J.VariableDeclarations.NamedVariable var : lookupMethod) {
-//                    var newFieldName = var.getVariableType().getName();
-//                    var newFieldType = ((JavaType.Class) var.getVariableType().getType()).getClassName();
-//                    var newImport =((JavaType.Class) var.getVariableType().getType()).getFullyQualifiedName();
-//
-//                    String newFieldCode = String.format("""
-//                        @Inject
-//                        private %s %s;
-//                        """, newFieldType, newFieldName);
-//                    classDeclaration = JavaTemplate.builder(newFieldCode)
-//                        .javaParser(JavaParser.fromJavaVersion().classpath("javax.inject", "plexus-build-api"))
-//                        .imports("javax.inject.Inject", newImport)
-//                        .build().apply(updateCursor(classDeclaration), classDeclaration.getBody().getCoordinates().firstStatement());
-//                    maybeAddImport(newImport); // both imports methods are needed to add a new import
-//                }
-//             maybeAddImport("javax.inject.Inject"); // both imports methods are needed to add a new import
-//            }
-//
-//
-//            return super.visitClassDeclaration(classDeclaration, executionContext);
-//        }
 
         @Override
         public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext executionContext) {
