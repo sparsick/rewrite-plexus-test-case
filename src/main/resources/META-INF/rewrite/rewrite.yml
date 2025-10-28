@@ -4,7 +4,7 @@ description: Migrate test based on PlexusTestCase to PlexusTest or PlexusExtensi
 displayName: Migrate PlexusTestCase
 recipeList:
   - org.openrewrite.java.testing.junit5.MigrateJUnitTestCase
-  - dev.parsick.maven.rewrite.plexustestcase.ReplaceLookup
+  - dev.parsick.maven.rewrite.ReplaceLookup
   - dev.parsick.maven.rewrite.plexustestcase.AddPlexusTestConfiguration
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: "* customizeContainerConfiguration(..)"

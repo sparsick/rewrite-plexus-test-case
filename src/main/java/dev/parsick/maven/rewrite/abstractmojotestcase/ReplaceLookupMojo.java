@@ -89,6 +89,7 @@ public class ReplaceLookupMojo extends Recipe {
                             .imports("org.apache.maven.api.plugin.testing.InjectMojo")
                             .build().apply(updateCursor(method), method.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
 
+                    // TODO check if some parameter already exists
                     String newParameter = String.format("""
                             %s %s""", newParamType, newParamName);
                     md = JavaTemplate.builder(newParameter)

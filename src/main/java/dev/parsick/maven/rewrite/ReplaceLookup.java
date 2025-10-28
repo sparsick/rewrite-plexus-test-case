@@ -1,4 +1,4 @@
-package dev.parsick.maven.rewrite.plexustestcase;
+package dev.parsick.maven.rewrite;
 
 import org.jetbrains.annotations.NotNull;
 import org.openrewrite.ExecutionContext;
@@ -12,6 +12,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 public class ReplaceLookup extends Recipe {
 
@@ -36,7 +37,7 @@ public class ReplaceLookup extends Recipe {
 
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
-            if(classDecl.getExtends() == null || !classDecl.getExtends().getType().toString().equals("org.codehaus.plexus.PlexusTestCase")) {
+            if(!extendsPlexusTestCaseOrAbstractMojoTestCase(classDecl)) {
                 return classDecl;
             }
 
@@ -67,6 +68,10 @@ public class ReplaceLookup extends Recipe {
             return super.visitClassDeclaration(classDeclaration, executionContext);
         }
 
+        private boolean extendsPlexusTestCaseOrAbstractMojoTestCase(J.ClassDeclaration classDecl) {
+            return classDecl.getExtends() != null && (classDecl.getExtends().getType().toString().equals("org.codehaus.plexus.PlexusTestCase") || classDecl.getExtends().getType().toString().equals("org.apache.maven.plugin.testing.AbstractMojoTestCase") );
+        }
+
         private @NotNull List<J.VariableDeclarations.NamedVariable> findLookupMethod(J.ClassDeclaration classDeclaration) {
             List<J.VariableDeclarations.NamedVariable> namedVariables = classDeclaration.getBody().getStatements().stream()
                     .filter(statement -> statement instanceof J.MethodDeclaration)
@@ -74,18 +79,30 @@ public class ReplaceLookup extends Recipe {
                     .flatMap(md -> md.getBody().getStatements().stream())// find all method declaration in the class
                     .filter(st -> st instanceof J.VariableDeclarations)
                     .flatMap(vd -> ((J.VariableDeclarations) vd).getVariables().stream()).toList(); // find all lines of code that init new local variable
-            return namedVariables.stream().filter(nv -> nv.getInitializer().toString().contains("lookup")).toList(); // find all lines of code that init a new local variable with a lookup method
+            return namedVariables.stream()
+                    .filter(hasLookupMethod())
+                    .toList(); // find all lines of code that init a new local variable with a lookup method
+        }
+
+        private @NotNull Predicate<J.VariableDeclarations.NamedVariable> hasLookupMethod() {
+            return nv -> nv.getInitializer() instanceof J.TypeCast
+                    && ((J.TypeCast) nv.getInitializer()).getExpression() instanceof J.MethodInvocation
+                    && ((J.MethodInvocation) ((J.TypeCast) nv.getInitializer()).getExpression()).getName().toString().equals("lookup");
         }
 
 
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
             J.VariableDeclarations variableDeclarations = super.visitVariableDeclarations(multiVariable, executionContext);
-            if(variableDeclarations.getVariables().stream().anyMatch(v -> v.getInitializer()!= null && v.getInitializer().toString().contains("lookup"))) {
+            if(hasLookupMethod(variableDeclarations)) {
                 return null; // delete line with lookup
             }
 
             return variableDeclarations;
+        }
+
+        private boolean hasLookupMethod(J.VariableDeclarations variableDeclarations) {
+            return variableDeclarations.getVariables().stream().anyMatch(hasLookupMethod());
         }
     }
 }
