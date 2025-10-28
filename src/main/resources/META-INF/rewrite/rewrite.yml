@@ -13,3 +13,14 @@ recipeList:
       methodPattern: "* customizeConfiguration(..)"
       newAccessLevel: public
   - dev.parsick.maven.rewrite.plexustestcase.ReplacePlexusTestCase
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: dev.parsick.maven.rewrite.abstractmojotestcase.MigrateAbstractMojoTestCase
+description: Migrate test based on AbstractMojoTestCase to MojoTest.
+displayName: Migrate AbstractMojoTestCase
+recipeList:
+  - org.openrewrite.java.testing.junit5.MigrateJUnitTestCase
+  - dev.parsick.maven.rewrite.ReplaceLookup
+  - dev.parsick.maven.rewrite.abstractmojotestcase.MigrateMojoParameter
+  - dev.parsick.maven.rewrite.abstractmojotestcase.ReplaceLookupMojo
+  - dev.parsick.maven.rewrite.abstractmojotestcase.ReplaceAbstractMojoTestCase
