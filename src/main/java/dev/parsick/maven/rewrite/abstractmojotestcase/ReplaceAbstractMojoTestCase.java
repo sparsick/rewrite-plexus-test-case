@@ -15,12 +15,12 @@ import java.util.Comparator;
 public class ReplaceAbstractMojoTestCase extends Recipe {
     @Override
     public @NlsRewrite.DisplayName String getDisplayName() {
-        return "";
+        return "Replace AbstractMojoTestCase by MojoTest annotation";
     }
 
     @Override
     public @NlsRewrite.Description String getDescription() {
-        return ".";
+        return "Replace AbstractMojoTestCase by MojoTest annotation.";
     }
 
     @Override
@@ -32,24 +32,26 @@ public class ReplaceAbstractMojoTestCase extends Recipe {
     private class AbstractMojoTestCaseVisitor extends JavaIsoVisitor<ExecutionContext> {
 
 
+        private static final String FULL_QUALIFIED_NAME_MOJO_TEST = "org.apache.maven.api.plugin.testing.MojoTest";
+        private static final String FULLY_QUALIFIED_NAME_ABSTRACT_MOJO_TEST_CASE = "org.apache.maven.plugin.testing.AbstractMojoTestCase";
 
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
             J.ClassDeclaration cd = classDecl;
-            if (cd.getExtends()==null || !((JavaType.Class)cd.getExtends().getType()).getFullyQualifiedName().equals("org.apache.maven.plugin.testing.AbstractMojoTestCase"))  {
+            if (cd.getExtends()==null || !((JavaType.Class)cd.getExtends().getType()).getFullyQualifiedName().equals(FULLY_QUALIFIED_NAME_ABSTRACT_MOJO_TEST_CASE))  {
                 return cd;
             }
 
             cd = JavaTemplate.builder("@MojoTest")
                     .javaParser(JavaParser.fromJavaVersion()
                             .classpath("maven-plugin-testing-harness"))
-                    .imports("org.apache.maven.api.plugin.testing.MojoTest")
+                    .imports(FULL_QUALIFIED_NAME_MOJO_TEST)
                     .build()
                     .apply(getCursor(), cd.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
-            maybeAddImport("org.apache.maven.api.plugin.testing.MojoTest"); // both imports methods are needed to add a new import
+            maybeAddImport(FULL_QUALIFIED_NAME_MOJO_TEST); // both imports methods are needed to add a new import
 
             cd = cd.withExtends(null);
-            maybeRemoveImport("org.apache.maven.plugin.testing.AbstractMojoTestCase");
+            maybeRemoveImport(FULLY_QUALIFIED_NAME_ABSTRACT_MOJO_TEST_CASE);
 
             return cd;
         }

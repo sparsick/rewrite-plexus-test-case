@@ -32,24 +32,24 @@ class MigrateMojoParameterTest implements RewriteTest {
         rewriteRun(java("""
                                         import org.apache.maven.plugin.testing.AbstractMojoTestCase;
                                         import org.apache.maven.plugin.Mojo;
-                                        
+                
                                         public class MojoTest extends AbstractMojoTestCase {
                                             public void testModelloConvertersMojo() throws Exception {
                                                 Mojo mojo = lookupMojo("jira-changes", "");
                                                 setVariableValueToObject(mojo, "skip", true);
-                                            }    
+                                            }
                                         }
                 
-                ""","""
-                                        import org.apache.maven.api.plugin.testing.MojoParameter;
+                """, """
                                         import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+                                        import org.apache.maven.api.plugin.testing.MojoParameter;
                                         import org.apache.maven.plugin.Mojo;
-                                        
+                
                                         public class MojoTest extends AbstractMojoTestCase {
                                             @MojoParameter(name = "skip", value = "true")
                                             public void testModelloConvertersMojo() throws Exception {
                                                 Mojo mojo = lookupMojo("jira-changes", "");
-                                            }    
+                                            }
                                         }
                 
                 """
@@ -64,26 +64,26 @@ class MigrateMojoParameterTest implements RewriteTest {
         rewriteRun(java("""
                                         import org.apache.maven.plugin.testing.AbstractMojoTestCase;
                                         import org.apache.maven.plugin.Mojo;
-                                        
+                
                                         public class MojoTest extends AbstractMojoTestCase {
                                             public void testModelloConvertersMojo() throws Exception {
                                                 Mojo mojo = lookupMojo("jira-changes", "");
                                                 setVariableValueToObject(mojo, "skip", true);
                                                 setVariableValueToObject(mojo, "other", "set");
-                                            }    
+                                            }
                                         }
                 
-                ""","""
+                """, """
                                         import org.apache.maven.plugin.testing.AbstractMojoTestCase;
                                         import org.apache.maven.api.plugin.testing.MojoParameter;
                                         import org.apache.maven.plugin.Mojo;
-                                        
+                
                                         public class MojoTest extends AbstractMojoTestCase {
                                             @MojoParameter(name = "skip", value = "true")
                                             @MojoParameter(name = "other", value = "set")
                                             public void testModelloConvertersMojo() throws Exception {
                                                 Mojo mojo = lookupMojo("jira-changes", "");
-                                            }    
+                                            }
                                         }
                 
                 """

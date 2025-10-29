@@ -20,12 +20,12 @@ public class ReplaceLookup extends Recipe {
 
     @Override
     public @NlsRewrite.DisplayName String getDisplayName() {
-        return "";
+        return "Replace lookup method by Inject annotation";
     }
 
     @Override
     public @NlsRewrite.Description String getDescription() {
-        return ".";
+        return "Replace lookup method by Inject annotation.";
     }
 
     @Override
@@ -34,6 +34,8 @@ public class ReplaceLookup extends Recipe {
     }
 
     private class ReplaceLookupVisitor extends JavaIsoVisitor<ExecutionContext> {
+
+        private static final String FULLY_QUALIFIED_NAME_INJECT = "javax.inject.Inject";
 
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
@@ -47,25 +49,30 @@ public class ReplaceLookup extends Recipe {
 
             if  (!lookupMethod.isEmpty()) {
                 for(J.VariableDeclarations.NamedVariable var : lookupMethod) {
-                    var newFieldName = var.getVariableType().getName();
-                    var newFieldType = ((JavaType.Class) var.getVariableType().getType()).getClassName();
-                    var newImport =((JavaType.Class) var.getVariableType().getType()).getFullyQualifiedName();
-
-                    String newFieldCode = String.format("""
-                        @Inject
-                        private %s %s; 
-                        """, newFieldType, newFieldName);
-                    classDeclaration = JavaTemplate.builder(newFieldCode)
-                        .javaParser(JavaParser.fromJavaVersion().classpath("javax.inject", "plexus-build-api"))
-                        .imports("javax.inject.Inject", newImport)
-                        .build().apply(updateCursor(classDeclaration), classDeclaration.getBody().getCoordinates().firstStatement());
-                    maybeAddImport(newImport); // both imports methods are needed to add a new import
+                    classDeclaration = addInjectField(var, classDeclaration);
                 }
-             maybeAddImport("javax.inject.Inject"); // both imports methods are needed to add a new import
+             maybeAddImport(FULLY_QUALIFIED_NAME_INJECT); // both imports methods are needed to add a new import
             }
 
 
             return super.visitClassDeclaration(classDeclaration, executionContext);
+        }
+
+        private J.@NotNull ClassDeclaration addInjectField(J.VariableDeclarations.NamedVariable var, J.ClassDeclaration classDeclaration) {
+            var newFieldName = var.getVariableType().getName();
+            var newFieldType = ((JavaType.Class) var.getVariableType().getType()).getClassName();
+            var newImport =((JavaType.Class) var.getVariableType().getType()).getFullyQualifiedName();
+
+            String newFieldCode = String.format("""
+                @Inject
+                private %s %s; 
+                """, newFieldType, newFieldName);
+            classDeclaration = JavaTemplate.builder(newFieldCode)
+                .javaParser(JavaParser.fromJavaVersion().classpath("javax.inject", "plexus-build-api"))
+                .imports(FULLY_QUALIFIED_NAME_INJECT, newImport)
+                .build().apply(updateCursor(classDeclaration), classDeclaration.getBody().getCoordinates().firstStatement());
+            maybeAddImport(newImport); // both imports methods are needed to add a new import
+            return classDeclaration;
         }
 
         private boolean extendsPlexusTestCaseOrAbstractMojoTestCase(J.ClassDeclaration classDecl) {

@@ -42,30 +42,29 @@ public class ReplacePlexusTestCase extends Recipe {
                 "getTestConfiguration"
         );
 
-        private static String PLEXUS_EXTENSION_CLASS = "org.codehaus.plexus.testing.PlexusExtension";
-        private static String PLEXUS_TEST_CASE_CLASS = "org.codehaus.plexus.PlexusTestCase";
+        private static final String FULLY_QUALIFIED_NAME_PLEXUS_TEST = "org.codehaus.plexus.testing.PlexusTest";
+        private static final String FULLY_QUALIFIED_NAME_PLEXUS_EXTENSION = "org.codehaus.plexus.testing.PlexusExtension";
+        private static final String FULLY_QUALIFIED_NAME_PLEXUS_TEST_CASE = "org.codehaus.plexus.PlexusTestCase";
 
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
             J.ClassDeclaration cd = classDecl;
-            if (cd.getExtends()==null || !((JavaType.Class)cd.getExtends().getType()).getFullyQualifiedName().equals("org.codehaus.plexus.PlexusTestCase"))  {
+            if (cd.getExtends()==null || !((JavaType.Class)cd.getExtends().getType()).getFullyQualifiedName().equals(FULLY_QUALIFIED_NAME_PLEXUS_TEST_CASE))  {
                 return cd;
             }
 
             cd = JavaTemplate.builder("@PlexusTest")
                     .javaParser(JavaParser.fromJavaVersion()
                             .classpath("plexus-testing"))
-                    .imports("org.codehaus.plexus.testing.PlexusTest")
+                    .imports(FULLY_QUALIFIED_NAME_PLEXUS_TEST)
                     .build()
                     .apply(getCursor(), cd.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
-            maybeAddImport("org.codehaus.plexus.testing.PlexusTest"); // both imports methods are needed to add a new import
-            STATIC_PLEXUS_EXTENSIONS_METHOD.forEach(it -> {
-                        doAfterVisit(new ChangeMethodTargetToStatic(PLEXUS_TEST_CASE_CLASS + " " + it + "(..)", PLEXUS_EXTENSION_CLASS, null, null, true).getVisitor());
-                    }
+            maybeAddImport(FULLY_QUALIFIED_NAME_PLEXUS_TEST); // both imports methods are needed to add a new import
+            STATIC_PLEXUS_EXTENSIONS_METHOD.forEach(it -> doAfterVisit(new ChangeMethodTargetToStatic(FULLY_QUALIFIED_NAME_PLEXUS_TEST_CASE + " " + it + "(..)", FULLY_QUALIFIED_NAME_PLEXUS_EXTENSION, null, null, true).getVisitor())
             );
 
             cd = cd.withExtends(null);
-            maybeRemoveImport("org.codehaus.plexus.PlexusTestCase");
+            maybeRemoveImport(FULLY_QUALIFIED_NAME_PLEXUS_TEST_CASE);
 
             return cd;
         }

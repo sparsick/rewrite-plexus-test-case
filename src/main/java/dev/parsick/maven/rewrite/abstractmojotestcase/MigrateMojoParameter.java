@@ -16,12 +16,12 @@ import java.util.List;
 public class MigrateMojoParameter extends Recipe {
     @Override
     public @NlsRewrite.DisplayName String getDisplayName() {
-        return "";
+        return "Migrate to MojoParameter annotations";
     }
 
     @Override
     public @NlsRewrite.Description String getDescription() {
-        return ".";
+        return "Searching for setVariableValueToObject methods and migrate them to MojoParameter annotations.";
     }
 
     @Override
@@ -33,6 +33,10 @@ public class MigrateMojoParameter extends Recipe {
     }
 
     private class MigrateMojoParameterVisitor extends JavaIsoVisitor<ExecutionContext> {
+
+        private static final String FULLY_QUALIFIED_NAME_MOJO_PARAMETER = "org.apache.maven.api.plugin.testing.MojoParameter";
+        private static final String METHOD_FOR_MOJO_PARAMETER = "setVariableValueToObject";
+
         @Override
         public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext executionContext) {
             if(!extendsAbstractMojoTestCase()){
@@ -49,10 +53,10 @@ public class MigrateMojoParameter extends Recipe {
                         @MojoParameter(name="%s", value="%s")""", nameParam, valueParam);
                     md = JavaTemplate.builder(newAnnotationCode)
                             .javaParser(JavaParser.fromJavaVersion().classpath("maven-plugin-testing-harness"))
-                            .imports("org.apache.maven.api.plugin.testing.MojoParameter")
+                            .imports(FULLY_QUALIFIED_NAME_MOJO_PARAMETER)
                             .build().apply(updateCursor(md), md.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
                 }
-                maybeAddImport("org.apache.maven.api.plugin.testing.MojoParameter"); // both imports methods are needed to add a new import
+                maybeAddImport(FULLY_QUALIFIED_NAME_MOJO_PARAMETER); // both imports methods are needed to add a new import
             }
             return super.visitMethodDeclaration(md, executionContext);
         }
@@ -66,14 +70,14 @@ public class MigrateMojoParameter extends Recipe {
             return md.getBody().getStatements().stream()
                     .filter(statement -> statement instanceof J.MethodInvocation)
                     .map(statement -> (J.MethodInvocation) statement)
-                    .filter(mi -> mi.getSimpleName().equals("setVariableValueToObject"))
+                    .filter(mi -> mi.getSimpleName().equals(METHOD_FOR_MOJO_PARAMETER))
                     .toList();
         }
 
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
             J.MethodInvocation mi = super.visitMethodInvocation(method, executionContext);
-            if(mi.getSimpleName().equals("setVariableValueToObject")) {
+            if(mi.getSimpleName().equals(METHOD_FOR_MOJO_PARAMETER)) {
                 return null;  // delete line with lookup
             }
             return mi;
