@@ -11,6 +11,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -85,6 +86,9 @@ public class ReplaceLookupMojo extends Recipe {
         }
 
         private @NotNull List<J.VariableDeclarations.NamedVariable> findLookupMojoMethod(J.MethodDeclaration md) {
+            if(md.getBody() == null) {
+                return Collections.emptyList();
+            }
             List<J.VariableDeclarations.NamedVariable> namedVariables = md.getBody().getStatements().stream()
                     .filter(st -> st instanceof J.VariableDeclarations)
                     .flatMap(vd -> ((J.VariableDeclarations) vd).getVariables().stream()).toList(); // find all lines of code that init new local variable

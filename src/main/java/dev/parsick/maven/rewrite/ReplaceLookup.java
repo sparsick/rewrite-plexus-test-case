@@ -83,6 +83,7 @@ public class ReplaceLookup extends Recipe {
             List<J.VariableDeclarations.NamedVariable> namedVariables = classDeclaration.getBody().getStatements().stream()
                     .filter(statement -> statement instanceof J.MethodDeclaration)
                     .map(statement -> (J.MethodDeclaration) statement)
+                    .filter(md -> md.getBody() != null )
                     .flatMap(md -> md.getBody().getStatements().stream())// find all method declaration in the class
                     .filter(st -> st instanceof J.VariableDeclarations)
                     .flatMap(vd -> ((J.VariableDeclarations) vd).getVariables().stream()).toList(); // find all lines of code that init new local variable

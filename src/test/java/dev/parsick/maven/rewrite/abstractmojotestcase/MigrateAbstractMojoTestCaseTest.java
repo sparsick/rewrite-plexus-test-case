@@ -93,5 +93,28 @@ class MigrateAbstractMojoTestCaseTest implements RewriteTest {
                           }"""
         ));
     }
+
+    @Test
+    void abstractClasses() {
+        rewriteRun(java(
+                """
+                        import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+
+                        public abstract class MojoTest extends AbstractMojoTestCase {
+                            public abstract void testModelloConvertersMojo() throws Exception;
+                        }
+        """,
+                """
+                        import org.apache.maven.api.plugin.testing.MojoTest;
+                        import org.junit.jupiter.api.Test;
+                        
+                        @MojoTest
+                        public abstract class MojoTest {
+                            @Test
+                            public abstract void testModelloConvertersMojo() throws Exception;
+                        }"""
+        ));
+    }
+
 }
 

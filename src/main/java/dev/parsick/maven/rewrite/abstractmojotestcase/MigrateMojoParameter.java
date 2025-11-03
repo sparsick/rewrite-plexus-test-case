@@ -10,6 +10,7 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -67,6 +68,9 @@ public class MigrateMojoParameter extends Recipe {
         }
 
         private @NotNull List<J.MethodInvocation> findSetVariableValueToObjectMethod(J.MethodDeclaration md) {
+            if (md.getBody() == null) {
+                return Collections.emptyList();
+            }
             return md.getBody().getStatements().stream()
                     .filter(statement -> statement instanceof J.MethodInvocation)
                     .map(statement -> (J.MethodInvocation) statement)
