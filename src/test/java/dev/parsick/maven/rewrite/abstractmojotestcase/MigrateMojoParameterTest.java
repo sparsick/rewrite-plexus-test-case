@@ -89,7 +89,23 @@ class MigrateMojoParameterTest implements RewriteTest {
                 """
 
 
-
         ));
     }
+    @Test
+    void skipComplexObject() {
+            rewriteRun(java("""
+                                            import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
+                                            import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+                                            import org.apache.maven.plugin.Mojo;
+                    
+                                            public class MojoTest extends AbstractMojoTestCase {
+                                                public void testModelloConvertersMojo() throws Exception {
+                                                    Mojo mojo = lookupMojo("jira-changes", "");
+                                                    setVariableValueToObject(mojo, "project", new MavenProjectStub());
+                                                }
+                                            }
+                    
+                    """));
+    }
+
 }

@@ -8,6 +8,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
 import java.util.Collections;
@@ -50,6 +51,11 @@ public class MigrateMojoParameter extends Recipe {
                     var nameParam = mi.getArguments().get(1);
                     var valueParam = mi.getArguments().get(2);
 
+                    if(!isStringTypeOrBooelean(valueParam)) {
+                        // skip this call
+                        continue;
+                    }
+
                     String newAnnotationCode = String.format("""
                         @MojoParameter(name="%s", value="%s")""", nameParam, valueParam);
                     md = JavaTemplate.builder(newAnnotationCode)
@@ -60,6 +66,11 @@ public class MigrateMojoParameter extends Recipe {
                 maybeAddImport(FULLY_QUALIFIED_NAME_MOJO_PARAMETER); // both imports methods are needed to add a new import
             }
             return super.visitMethodDeclaration(md, executionContext);
+        }
+
+        private boolean isStringTypeOrBooelean(Expression valueParam) {
+            String typeName = valueParam.getType().toString();
+            return typeName.contains("String") || typeName.contains("boolean");
         }
 
         private boolean extendsAbstractMojoTestCase() {
@@ -81,7 +92,7 @@ public class MigrateMojoParameter extends Recipe {
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
             J.MethodInvocation mi = super.visitMethodInvocation(method, executionContext);
-            if(mi.getSimpleName().equals(METHOD_FOR_MOJO_PARAMETER)) {
+            if(mi.getSimpleName().equals(METHOD_FOR_MOJO_PARAMETER) && isStringTypeOrBooelean(mi.getArguments().get(2))) {
                 return null;  // delete line with lookup
             }
             return mi;
