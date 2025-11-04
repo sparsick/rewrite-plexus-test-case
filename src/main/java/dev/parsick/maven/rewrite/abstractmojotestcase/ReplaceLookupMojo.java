@@ -1,6 +1,7 @@
 package dev.parsick.maven.rewrite.abstractmojotestcase;
 
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.NlsRewrite;
 import org.openrewrite.Recipe;
@@ -8,6 +9,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
@@ -71,13 +73,31 @@ public class ReplaceLookupMojo extends Recipe {
         }
 
         private J.MethodDeclaration addInjectMojoAnnotation(J.VariableDeclarations.NamedVariable var, J.MethodDeclaration method) {
-            var goalName = ((J.MethodInvocation) var.getInitializer()).getArguments().getFirst().toString();
+            List<Expression> arguments = ((J.MethodInvocation) var.getInitializer()).getArguments();
+            var goalName = arguments.get(0).toString();
+            var pomPath = extractPomPath(arguments.get(1), method.getBody());
             String newAnnotationCode = String.format("""
-                @InjectMojo(goal="%s")""", goalName);
+                @InjectMojo(goal="%s", pom="%s")""", goalName, pomPath);
             return JavaTemplate.builder(newAnnotationCode)
                     .javaParser(JavaParser.fromJavaVersion().classpath("maven-plugin-testing-harness"))
                     .imports(FULLY_QUALIFIED_NAME_INJECT_MOJO)
                     .build().apply(updateCursor(method), method.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
+        }
+
+        private static String extractPomPath(Expression pomPath, J.@Nullable Block body) {
+            if (pomPath instanceof J.Literal) {
+                return pomPath.toString();
+            } else {
+                var varName = pomPath.toString();
+                J.VariableDeclarations.NamedVariable pomFile = body.getStatements().stream()
+                        .filter(statement -> statement instanceof J.VariableDeclarations)
+                        .map(statement -> (J.VariableDeclarations) statement)
+                        .filter(variableDeclarations -> variableDeclarations.getVariables().size() == 1)
+                        .flatMap(variableDeclarations -> variableDeclarations.getVariables().stream())
+                        .filter(namedVariable -> namedVariable.getSimpleName().equals(varName))
+                        .findFirst().get();
+                return ((J.NewClass) pomFile.getInitializer()).getArguments().get(1).toString();
+            }
         }
 
         private boolean extendsAbstractMojoTestCase() {
@@ -99,11 +119,34 @@ public class ReplaceLookupMojo extends Recipe {
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext executionContext) {
             J.VariableDeclarations variableDeclarations = super.visitVariableDeclarations(multiVariable, executionContext);
+
+            if(variableDeclarations.getVariables().stream().anyMatch(v -> v.getInitializer()!= null && v.getInitializer().toString().contains("new File"))) {
+                J.VariableDeclarations.NamedVariable potentialLookupArgument = variableDeclarations.getVariables().stream().filter(v -> v.getInitializer() != null && v.getInitializer().toString().contains("new File")).findFirst().get();
+                if (isArgumentOfLookupMethod(potentialLookupArgument.getSimpleName())){
+                    maybeRemoveImport("java.io.File");
+                    return null; // delete pomPath file var
+                }
+
+            }
+
             if(variableDeclarations.getVariables().stream().anyMatch(v -> v.getInitializer()!= null && v.getInitializer().toString().contains(LOOKUP_MOJO_METHOD))) {
                 return null; // delete line with lookupMojo
             }
 
             return variableDeclarations;
+        }
+
+        private boolean isArgumentOfLookupMethod(String argumentVarName) {
+            J.MethodDeclaration methodDeclaration = getCursor().firstEnclosing(J.MethodDeclaration.class);
+            return methodDeclaration.getBody().getStatements().stream()
+                    .filter(statement -> statement instanceof J.VariableDeclarations)
+                    .map(statement -> (J.VariableDeclarations) statement)
+                    .flatMap(variableDeclarations -> variableDeclarations.getVariables().stream())
+                    .filter(namedVariable -> namedVariable.getInitializer() != null && namedVariable.getInitializer().toString().contains(LOOKUP_MOJO_METHOD))
+                    .flatMap(namedVariable -> ((J.MethodInvocation) namedVariable.getInitializer()).getArguments().stream())
+                    .filter(statement -> statement instanceof J.Identifier)
+                    .map(statement -> (J.Identifier) statement)
+                    .anyMatch(statement -> statement.getSimpleName().toString().equals(argumentVarName));
         }
     }
 }

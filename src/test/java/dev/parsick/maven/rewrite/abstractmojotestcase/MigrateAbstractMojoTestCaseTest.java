@@ -76,7 +76,7 @@ class MigrateAbstractMojoTestCaseTest implements RewriteTest {
                               @Inject
                               private BuildContext buildContext;
                         
-                              @InjectMojo(goal = "jira-changes")
+                              @InjectMojo(goal = "jira-changes", pom = "")
                               @MojoParameter(name = "skip", value = "true")
                               @MojoParameter(name = "other", value = "set")
                               @Test
