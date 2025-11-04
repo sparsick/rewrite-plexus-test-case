@@ -73,7 +73,8 @@ public class ReplaceLookupMojo extends Recipe {
         }
 
         private J.MethodDeclaration addInjectMojoAnnotation(J.VariableDeclarations.NamedVariable var, J.MethodDeclaration method) {
-            List<Expression> arguments = ((J.MethodInvocation) var.getInitializer()).getArguments();
+            List<Expression> arguments;
+            arguments = extractArguments(var);
             var goalName = arguments.get(0).toString();
             var pomPath = extractPomPath(arguments.get(1), method.getBody());
             String newAnnotationCode = String.format("""
@@ -84,7 +85,18 @@ public class ReplaceLookupMojo extends Recipe {
                     .build().apply(updateCursor(method), method.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
         }
 
-        private static String extractPomPath(Expression pomPath, J.@Nullable Block body) {
+        private @NotNull List<Expression> extractArguments(J.VariableDeclarations.NamedVariable var) {
+            List<Expression> arguments;
+            Expression initializer = var.getInitializer();
+            switch (initializer) {
+                case J.MethodInvocation mi -> arguments = mi.getArguments();
+                case J.TypeCast tc ->  arguments = ((J.MethodInvocation)tc.getExpression()).getArguments();
+                default -> throw new IllegalArgumentException("incompatible type: " + initializer);
+            }
+            return arguments;
+        }
+
+        private String extractPomPath(Expression pomPath, J.@Nullable Block body) {
             if (pomPath instanceof J.Literal) {
                 return pomPath.toString();
             } else {
@@ -95,7 +107,7 @@ public class ReplaceLookupMojo extends Recipe {
                         .filter(variableDeclarations -> variableDeclarations.getVariables().size() == 1)
                         .flatMap(variableDeclarations -> variableDeclarations.getVariables().stream())
                         .filter(namedVariable -> namedVariable.getSimpleName().equals(varName))
-                        .findFirst().get();
+                        .findFirst().orElseThrow(() -> new IllegalArgumentException(body.toString()));
                 return ((J.NewClass) pomFile.getInitializer()).getArguments().get(1).toString();
             }
         }
@@ -142,8 +154,11 @@ public class ReplaceLookupMojo extends Recipe {
                     .filter(statement -> statement instanceof J.VariableDeclarations)
                     .map(statement -> (J.VariableDeclarations) statement)
                     .flatMap(variableDeclarations -> variableDeclarations.getVariables().stream())
-                    .filter(namedVariable -> namedVariable.getInitializer() != null && namedVariable.getInitializer().toString().contains(LOOKUP_MOJO_METHOD))
-                    .flatMap(namedVariable -> ((J.MethodInvocation) namedVariable.getInitializer()).getArguments().stream())
+                    .filter(namedVariable -> namedVariable.getInitializer() != null)
+                    .filter(namedVariable -> namedVariable.toString().contains(LOOKUP_MOJO_METHOD))
+                    .map(namedVariable -> namedVariable.getInitializer() instanceof J.TypeCast ? ((J.TypeCast) namedVariable.getInitializer()).getExpression() : namedVariable.getInitializer())
+                    .map(expression -> (J.MethodInvocation) expression)
+                    .flatMap(mi -> mi.getArguments().stream())
                     .filter(statement -> statement instanceof J.Identifier)
                     .map(statement -> (J.Identifier) statement)
                     .anyMatch(statement -> statement.getSimpleName().toString().equals(argumentVarName));

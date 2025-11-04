@@ -116,5 +116,47 @@ class MigrateAbstractMojoTestCaseTest implements RewriteTest {
         ));
     }
 
+
+    @Test
+    void lookupMojoWithCastAndPomFile() {
+        rewriteRun(java(
+                """
+                                        import java.io.File;
+                                        import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+                                        import org.apache.maven.plugin.Mojo;
+                                        
+                                        public class MojoTest extends AbstractMojoTestCase {
+                                            public void testModelloConvertersMojo() throws Exception {
+                                                File pluginXmlFile = new File(getBasedir(), "src/test/resources/plugin-configs/check-plugin-config.xml");
+                
+                                                Mojo mojo = (Mojo) lookupMojo("check", pluginXmlFile);
+                                            }    
+                                            
+                                               public void testModelloConvertersMojo2() throws Exception {
+                                                File pluginXmlFile = new File(getBasedir(), "src/test/resources/plugin-configs/check-plugin-config.xml");
+                
+                                                Mojo mojo = (Mojo) lookupMojo("check", pluginXmlFile);
+                                            }  
+                                        }
+                        """,
+                """
+                                        import org.junit.jupiter.api.Test;
+                                        import org.apache.maven.api.plugin.testing.InjectMojo;
+                                        import org.apache.maven.api.plugin.testing.MojoTest;
+                                        import org.apache.maven.plugin.Mojo;
+                                        
+                                        @MojoTest
+                                        public class MojoTest {
+                                            @InjectMojo(goal = "check", pom = "src/test/resources/plugin-configs/check-plugin-config.xml")
+                                            @Test
+                                            public void testModelloConvertersMojo(Mojo mojo) throws Exception {
+                                            }    
+                                            
+                                            @InjectMojo(goal = "check", pom = "src/test/resources/plugin-configs/check-plugin-config.xml")
+                                            @Test
+                                            public void testModelloConvertersMojo2(Mojo mojo) throws Exception {
+                                            }    
+                                        }"""));
+    }
 }
 

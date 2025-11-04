@@ -106,4 +106,57 @@ class ReplaceLookupMojoTest implements RewriteTest {
                                             }    
                                         }"""));
     }
+
+    @Test
+    void lookupMojoWithCast() {
+        rewriteRun(java(
+                """
+                                        import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+                                        import org.apache.maven.plugin.Mojo;
+                                        
+                                        public class MojoTest extends AbstractMojoTestCase {
+                                            public void testModelloConvertersMojo() throws Exception {
+                                                Mojo mojo = (Mojo) lookupMojo("check", "src/test/resources/plugin-configs/check-plugin-config.xml");
+                                            }    
+                                        }
+                        """,
+                """
+                                        import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+                                        import org.apache.maven.api.plugin.testing.InjectMojo;
+                                        import org.apache.maven.plugin.Mojo;
+                                        
+                                        public class MojoTest extends AbstractMojoTestCase {
+                                            @InjectMojo(goal = "check", pom = "src/test/resources/plugin-configs/check-plugin-config.xml")
+                                            public void testModelloConvertersMojo(Mojo mojo) throws Exception {
+                                            }    
+                                        }"""));
+    }
+
+    @Test
+    void lookupMojoWithCastAndPomFile() {
+        rewriteRun(java(
+                """
+                                        import java.io.File;
+                                        import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+                                        import org.apache.maven.plugin.Mojo;
+                                        
+                                        public class MojoTest extends AbstractMojoTestCase {
+                                            public void testModelloConvertersMojo() throws Exception {
+                                                File pluginXmlFile = new File(getBasedir(), "src/test/resources/plugin-configs/check-plugin-config.xml");
+                
+                                                Mojo mojo = (Mojo) lookupMojo("check", pluginXmlFile);
+                                            }    
+                                        }
+                        """,
+                """
+                                        import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+                                        import org.apache.maven.api.plugin.testing.InjectMojo;
+                                        import org.apache.maven.plugin.Mojo;
+                                        
+                                        public class MojoTest extends AbstractMojoTestCase {
+                                            @InjectMojo(goal = "check", pom = "src/test/resources/plugin-configs/check-plugin-config.xml")
+                                            public void testModelloConvertersMojo(Mojo mojo) throws Exception {
+                                            }    
+                                        }"""));
+    }
 }
