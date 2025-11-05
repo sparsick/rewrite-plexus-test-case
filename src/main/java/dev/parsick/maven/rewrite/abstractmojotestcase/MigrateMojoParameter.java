@@ -29,10 +29,9 @@ public class MigrateMojoParameter extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new MigrateMojoParameterVisitor();
-
-
-
     }
+
+    //TODO getVariableValueFromObject -> MojoExtension.getVariableValueFromObject
 
     private class MigrateMojoParameterVisitor extends JavaIsoVisitor<ExecutionContext> {
 

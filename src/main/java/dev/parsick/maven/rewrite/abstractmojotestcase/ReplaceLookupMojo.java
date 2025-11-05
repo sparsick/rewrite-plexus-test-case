@@ -124,7 +124,7 @@ public class ReplaceLookupMojo extends Recipe {
             List<J.VariableDeclarations.NamedVariable> namedVariables = md.getBody().getStatements().stream()
                     .filter(st -> st instanceof J.VariableDeclarations)
                     .flatMap(vd -> ((J.VariableDeclarations) vd).getVariables().stream()).toList(); // find all lines of code that init new local variable
-            return namedVariables.stream().filter(nv -> nv.getInitializer().toString().contains(LOOKUP_MOJO_METHOD)).toList(); // find all lines of code that init a new local variable with a lookupMojo method
+            return namedVariables.stream().filter(nv -> nv.getInitializer() != null && nv.getInitializer().toString().contains(LOOKUP_MOJO_METHOD)).toList(); // find all lines of code that init a new local variable with a lookupMojo method
         }
 
 
@@ -150,7 +150,14 @@ public class ReplaceLookupMojo extends Recipe {
 
         private boolean isArgumentOfLookupMethod(String argumentVarName) {
             J.MethodDeclaration methodDeclaration = getCursor().firstEnclosing(J.MethodDeclaration.class);
-            return methodDeclaration.getBody().getStatements().stream()
+            if (methodDeclaration == null) {
+                return false;
+            }
+            J.Block body = methodDeclaration.getBody();
+            if (body == null) {
+                return false;
+            }
+            return body.getStatements().stream()
                     .filter(statement -> statement instanceof J.VariableDeclarations)
                     .map(statement -> (J.VariableDeclarations) statement)
                     .flatMap(variableDeclarations -> variableDeclarations.getVariables().stream())
